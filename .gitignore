@@ -4,5 +4,8 @@ compile_commands.json
 
 /scripts/
 
+*/*.sh
+*.sh
+
 */*/*.swp
 *.swp
