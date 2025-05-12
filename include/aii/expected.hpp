@@ -58,7 +58,7 @@ class Expected<void, E>{
     using ExpectedType = void;
     using ErrorType = E;
 
-    Expected() noexcept = delete;
+    Expected() noexcept;
     Expected(const Expected& src) noexcept;
     Expected(Expected&& src) noexcept;
     Expected(std::remove_cv_t<ErrorType>&& src) noexcept;
