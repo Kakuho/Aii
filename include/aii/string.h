@@ -1,6 +1,5 @@
 #pragma once
 
-/*
 #include <cstdint>
 
 namespace Aii{
@@ -53,7 +52,6 @@ constexpr int Aii::Memcmp(const void* s1, const void* s2, std::size_t n){
   return 0;
 }
 
-/*
 // required for GCC 
 
 extern "C" {
@@ -75,4 +73,3 @@ inline int memcmp(const void* s1, const void* s2, std::size_t n){
 }
 
 }
-*/
