@@ -1,8 +1,8 @@
 #pragma once
 
-//  namespace Aii::Details holds all the stubs necessary for Aii to work.
 //  The following lists function declarations that must be implemented in order
-//  to use the full capacity of Aii
+//  to use the full capacity of Aii. Mainly used for heap allocation, so you must provide
+//  a custom heap allocator
 
 namespace Aii::Details{
  

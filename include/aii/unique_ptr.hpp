@@ -49,7 +49,6 @@ UniquePtr<T> MakeUnique(Args ...args);
 template<typename T>
 UniquePtr<T> MakeUniqueForOverwrite();
 
-
 } // namespace Aii
 
 template<typename T, typename D>
