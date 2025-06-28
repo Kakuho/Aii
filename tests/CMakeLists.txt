@@ -12,6 +12,7 @@ if(TESTS)
         main.cpp
         array.cpp
         expected.cpp
+        expected_void.cpp
         optional.cpp
   )
 

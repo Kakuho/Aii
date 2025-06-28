@@ -8,6 +8,16 @@
 
 namespace Aii{
 
+template<typename E>
+class Unexpected{
+  public:
+    using ErrorValue = E;
+    constexpr explicit Unexpected(ErrorValue&& val): m_unexpectedVal{val}{}
+    constexpr ErrorValue Error() const{ return m_unexpectedVal;}
+  private:
+    E m_unexpectedVal;
+};
+
 template<typename T, typename E>
 class Expected{
   public:
@@ -17,13 +27,16 @@ class Expected{
     constexpr Expected() noexcept = delete;
     constexpr Expected(const Expected& src) noexcept;
     constexpr Expected(Expected&& src) noexcept;
+    constexpr Expected(Unexpected<ErrorType>&& src) noexcept;
     constexpr Expected(std::remove_cv_t<ExpectedType>&& src) noexcept;
     constexpr Expected(std::remove_cv_t<ErrorType>&& src) noexcept;
     ~Expected() noexcept;
 
-    constexpr Expected& operator=(std::remove_cv_t<T> val){ m_val = val; return *this;}
-    constexpr Expected& operator=(const Expected<T, E>& src)
-    { m_val = src.m_val; return *this;}
+    constexpr Expected& operator=(std::remove_cv_t<T> val)
+    { m_val = val; m_isVal = true; return *this;}
+    constexpr Expected& operator=(E error)
+    { m_error = error; m_isVal = false; return *this;}
+    constexpr Expected& operator=(const Expected<T, E>& src);
 
     constexpr const T* operator->() const noexcept{ return &m_val;}
     constexpr T* operator->() noexcept{ return &m_val;}
@@ -40,8 +53,8 @@ class Expected{
     constexpr const ErrorType& Error() const noexcept{ return m_error;}
     constexpr ErrorType& Error() noexcept{ return m_error;}
 
-    constexpr Expected ValueOr(std::remove_cv_t<ExpectedType>&& dval) const;
-    constexpr Expected ErrorOr(std::remove_cv_t<ErrorType>&& dval) const;
+    constexpr ExpectedType ValueOr(std::remove_cv_t<ExpectedType>&& dval) const;
+    constexpr ErrorType ErrorOr(std::remove_cv_t<ErrorType>&& dval) const;
 
   private:
     union{
@@ -49,7 +62,6 @@ class Expected{
       ErrorType m_error;
     };
     bool m_isVal;
-
 };
 
 template<typename E>
@@ -58,12 +70,15 @@ class Expected<void, E>{
     using ExpectedType = void;
     using ErrorType = E;
 
-    Expected() noexcept = delete;
-    Expected(const Expected& src) noexcept;
-    Expected(Expected&& src) noexcept;
-    Expected(std::remove_cv_t<ErrorType>&& src) noexcept;
+    constexpr Expected() noexcept;
+    constexpr Expected(const Expected& src) noexcept;
+    constexpr Expected(Expected&& src) noexcept;
+    constexpr Expected(Unexpected<ErrorType>&& src) noexcept;
+    constexpr Expected(std::remove_cv_t<ErrorType>&& src) noexcept;
     ~Expected() noexcept;
 
+    constexpr Expected& operator=(E error)
+    { m_error = error; m_isVal = false; return *this;}
     constexpr Expected& operator=(const Expected& src);
 
     constexpr void operator*() const noexcept{ return;}
@@ -75,6 +90,8 @@ class Expected<void, E>{
 
     constexpr const ErrorType& Error() const noexcept{ return m_error;}
     constexpr ErrorType& Error() noexcept{ return m_error;}
+
+    constexpr ErrorType ErrorOr(std::remove_cv_t<ErrorType>&& dval) const;
 
   private:
     union{
@@ -110,6 +127,13 @@ constexpr Aii::Expected<T, E>::Expected(Expected&& src) noexcept{
   }
 }
 
+template<typename T, typename E>
+constexpr Aii::Expected<T, E>::Expected(Unexpected<ErrorType>&& unexp) noexcept
+  :
+    m_error{unexp.Error()},
+    m_isVal{false}
+{
+}
 
 template<typename T, typename E>
 constexpr Aii::Expected<T, E>::Expected(std::remove_cv_t<ExpectedType>&& src) noexcept
@@ -139,10 +163,51 @@ Aii::Expected<T, E>::~Expected() noexcept{
   }
 }
 
+
+template<typename T, typename E>
+constexpr Aii::Expected<T, E>& 
+Aii::Expected<T, E>::operator=(const Expected<T, E>& src){
+  if(src){
+    m_isVal = true;
+    m_val = src.m_val;
+  }
+  else{
+    m_isVal = false;
+    m_error = src.m_error;
+  }
+  return *this;
+}
+
+template<typename T, typename E>
+constexpr typename Aii::Expected<T, E>::ExpectedType
+Aii::Expected<T, E>::ValueOr(std::remove_cv_t<ExpectedType>&& dval) const{
+  if(m_isVal){
+    return m_val;
+  }
+  else{
+    return dval;
+  }
+}
+
+template<typename T, typename E>
+constexpr typename Aii::Expected<T, E>::ErrorType
+Aii::Expected<T, E>::ErrorOr(std::remove_cv_t<ErrorType>&& dval) const{
+  return m_isVal ? dval : m_error;
+}
+
 // Partial Specialisation Template Aii::Expected<void, E>
 
+
 template<typename E>
-Aii::Expected<void, E>::Expected(const Expected& src) noexcept{
+constexpr Aii::Expected<void, E>::Expected() noexcept
+  :
+    m_dummy{0},
+    m_isVal{true}
+{
+}
+
+template<typename E>
+constexpr Aii::Expected<void, E>::Expected(const Expected& src) noexcept{
   m_isVal = src.m_isVal;
   if(m_isVal){
     m_dummy = src.m_dummy;
@@ -153,7 +218,7 @@ Aii::Expected<void, E>::Expected(const Expected& src) noexcept{
 }
 
 template<typename E>
-Aii::Expected<void, E>::Expected(Expected&& src) noexcept{
+constexpr Aii::Expected<void, E>::Expected(Expected&& src) noexcept{
   m_isVal = src.m_isVal;
   if(m_isVal){
     m_dummy = std::move(src.m_dummy);
@@ -164,12 +229,19 @@ Aii::Expected<void, E>::Expected(Expected&& src) noexcept{
 }
 
 template<typename E>
-Aii::Expected<void, E>::Expected(std::remove_cv_t<ErrorType>&& src) noexcept
+constexpr Aii::Expected<void, E>::Expected(Unexpected<ErrorType>&& src) noexcept
+  :
+    m_error{src.Error()},
+    m_isVal{false}
+{
+}
+
+template<typename E>
+constexpr Aii::Expected<void, E>::Expected(std::remove_cv_t<ErrorType>&& src) noexcept
   :
     m_error{src},
     m_isVal{false}
 {
-
 }
 
 template<typename E>
@@ -179,4 +251,23 @@ Aii::Expected<void, E>::~Expected() noexcept{
   else{
     m_error.~E();
   }
+}
+
+template<typename E>
+constexpr Aii::Expected<void, E>& 
+Aii::Expected<void, E>::operator=(const Expected<void, E>& src){
+  if(src){
+    m_isVal = true;
+  }
+  else{
+    m_isVal = false;
+    m_error = src.m_error;
+  }
+  return *this;
+}
+
+template<typename E>
+constexpr typename Aii::Expected<void, E>::ErrorType 
+Aii::Expected<void, E>::ErrorOr(std::remove_cv_t<ErrorType>&& dval) const{
+  return m_isVal ? dval : m_error;
 }
