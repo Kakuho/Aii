@@ -10,6 +10,7 @@ if(TESTS)
 
   set(SRCS
         main.cpp
+        array.cpp
         expected.cpp
         optional.cpp
   )

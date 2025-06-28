@@ -1,6 +1,6 @@
 #pragma once
 
-// Stateless delete helper class for smart pointers
+// Stateless delete helper class for types using dynamic memory
 
 #include "stubs.hpp"
 

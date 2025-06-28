@@ -9,15 +9,16 @@ namespace Aii{
 template <typename T, std::size_t N>
 struct Array{
     T m_buffer[N];
-    constexpr std::size_t Size() const noexcept { return N; }
 
     constexpr T& Front() noexcept;
     constexpr const T& Front() const noexcept;
-
     constexpr T& Back() noexcept;
     constexpr const T& Back() const noexcept;
 
     constexpr T* Data() const noexcept { return m_buffer; }
+
+    constexpr bool Empty() const noexcept{ return N == 0;}
+    constexpr std::size_t Size() const noexcept { return N; }
 
     constexpr T* begin() noexcept;
     constexpr T* end() noexcept;
@@ -27,10 +28,13 @@ struct Array{
 
     constexpr bool operator==(const Array<T,N>& rhs) noexcept;
     constexpr bool operator==(const Array<T,N>& rhs) const noexcept;
+    constexpr bool operator!=(const Array& rhs) const noexcept;
+
+    constexpr void Fill(const T& value) noexcept;
+    constexpr void Swap(Array& other) noexcept;
 };
 
-template<typename T, std::size_t N>
-void Fill(Array<T, N>& src, T value);
+
 
 } // namespace Aii
 
@@ -118,8 +122,24 @@ Aii::Array<T, N>::operator==(const Array<T,N>& rhs) const noexcept{
 }
 
 template<typename T, std::size_t N>
-void Aii::Fill(Array<T, N>& src, T value){
-  for(auto& k: src){
-    k = value;
+constexpr bool 
+Aii::Array<T, N>::operator!=(const Array<T, N>& rhs) const noexcept{
+  return !(*this == rhs);
+}
+
+template<typename T, std::size_t N>
+constexpr void Aii::Array<T, N>::Fill(const T& value) noexcept{
+  for(auto& i: *this){
+    i = value;
+  }
+}
+
+template<typename T, std::size_t N>
+constexpr void Aii::Array<T, N>::Swap(Array<T, N>& other) noexcept{
+  // O(N) time complexity
+  Aii::Array<T, N> tmp = *this;
+  for(std::size_t i = 0; i < Size(); i++){
+    (*this)[i] = other[i];
+    other[i] = tmp[i];
   }
 }
