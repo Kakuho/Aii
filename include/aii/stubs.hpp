@@ -1,17 +1,13 @@
 #pragma once
 
-//  namespace Aii::Details holds all the stubs necessary for Aii to work.
-//  The following lists function declarations that must be implemented in order
-//  to use the full capacity of Aii
+//  The following functions and function templates needs to be implemented in order for Aii to use heap memory:
+//
+//    * void AssertError()
+//
+//    * void Delete<T>(T* t)
+//
+//    * T* Allocate<T, ...Args>(Args ...args)
+//
+//  The implementations of these support functions should be reachable from /impl/stubs.hpp
 
-namespace Aii::Details{
- 
-  inline void AssertError();
-
-  template<typename T>
-  void Delete(T* t);
-
-  template<typename T, typename ...Args>
-  T* Allocate(Args ...args);
-
-} // namespace Aii::Details
+#include "../../impl/stubs.hpp"

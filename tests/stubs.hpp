@@ -1,5 +1,6 @@
-#pragma once
+#include "doctest.h"
 
+#include <iostream>
 #include <cassert>
 #include <utility>
 
@@ -7,7 +8,7 @@
 
 namespace Aii::Details{
  
-  void AssertError(){
+  inline void AssertError(){
     assert(false);
   }
 

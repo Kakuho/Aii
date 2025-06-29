@@ -7,12 +7,14 @@ if(TESTS)
   message("Compile Tests On")
 
   add_compile_options(-g -O0 -Wall -Wextra)
+  add_compile_definitions(TEST_HOSTED_ENVIRONMENT)
 
   set(SRCS
         main.cpp
         array.cpp
         expected.cpp
         expected_void.cpp
+        unique_ptr.cpp
         optional.cpp
   )
 
