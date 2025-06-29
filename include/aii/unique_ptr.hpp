@@ -82,7 +82,6 @@ constexpr Aii::UniquePtr<T, D>::UniquePtr(UniquePtr&& src) noexcept
   :
     m_ptr{src.m_ptr}
 {
-
   src.m_ptr = nullptr;
 }
 
@@ -103,6 +102,7 @@ template<typename T, typename D>
 constexpr Aii::UniquePtr<T, D>& 
 Aii::UniquePtr<T, D>::operator=(std::nullptr_t) noexcept{
   Reset();
+  return *this;
 }
 
 template<typename T, typename D>
