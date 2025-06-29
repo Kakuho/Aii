@@ -58,10 +58,11 @@ TEST_CASE("UniquePtr<T, D> assignment tests"){
     CHECK(uptr1.Get() == pmyNum2);
     CHECK(uptr2.Get() == nullptr);
   }
+
 }
 
-TEST_CASE("UniquePtr<T, D> Reset and Release operations"){
-  SUBCASE("Release should release ownership of the pointer"){
+TEST_CASE("UniquePtr<T, D> Reset, Release and Swap Tests"){
+  SUBCASE("Release() should release ownership of the pointer"){
     int* pmyNum = new int{100};
     Aii::UniquePtr<int> uptr{pmyNum};
     REQUIRE(uptr.Get() == pmyNum);
@@ -72,7 +73,7 @@ TEST_CASE("UniquePtr<T, D> Reset and Release operations"){
     CHECK(uptr.Get() == nullptr);
   }
 
-  SUBCASE("Reset should replace the conatained pointer"){
+  SUBCASE("Reset() should replace the conatained pointer"){
     int* pmyNum = new int{100};
     int* replacer = new int{323};
 
@@ -83,13 +84,29 @@ TEST_CASE("UniquePtr<T, D> Reset and Release operations"){
     CHECK(uptr.Get() == replacer);
   }
 
-  SUBCASE("Reset without an argument should replace the contained pointer with nullptr"){
+  SUBCASE("Reset() without an argument should replace the contained pointer with nullptr"){
     int* pmyNum = new int{100};
     Aii::UniquePtr<int> uptr{pmyNum};
     REQUIRE(uptr.Get() == pmyNum);
 
     uptr.Reset();
     CHECK(uptr.Get() == nullptr);
+  }
+
+  SUBCASE("Swap() should swap both the contained pointer and the deleter"){
+    int* pmyNum1 = new int{121};
+    Aii::UniquePtr<int> uptr1{pmyNum1};
+    [[maybe_unused]] auto deleter1 = uptr1.GetDeleter();
+    REQUIRE(uptr1.Get() == pmyNum1);
+
+    int* pmyNum2 = new int{323};
+    Aii::UniquePtr<int> uptr2{pmyNum2};
+    [[maybe_unused]] auto deleter2 = uptr2.GetDeleter();
+    REQUIRE(uptr2.Get() == pmyNum2);
+
+    uptr1.Swap(uptr2);
+    CHECK(uptr1.Get() == pmyNum2);
+    CHECK(uptr2.Get() == pmyNum1);
   }
 }
 
@@ -110,10 +127,10 @@ TEST_CASE("UniquePtr<T, D> Contextual Conversions"){
     Aii::UniquePtr<int> uptr{};
     REQUIRE(uptr.Get() == nullptr);
     if(uptr){
-      CHECK(true);
+      CHECK(false);
     }
     else{
-      CHECK(false);
+      CHECK(true);
     }
   }
 
@@ -124,6 +141,7 @@ TEST_CASE("UniquePtr<T, D> Contextual Conversions"){
 
     //bool v = uptr;
     bool v = static_cast<bool>(uptr);
+    CHECK(v);
   }
 }
 
