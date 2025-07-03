@@ -61,7 +61,7 @@ class List{
 
     NodeAllocType& Allocator() const noexcept{return m_allocator;}
 
-    constexpr Node* Head() const noexcept{ return m_head;}
+    constexpr Node*& Head() const noexcept{ return m_head;}
 
     bool Empty() const noexcept{ return m_head == nullptr;}
 
@@ -255,4 +255,62 @@ template<typename T, typename A>
 auto Aii::List<T, A>::operator=(List&& src) noexcept -> List&{
   Head() = std::move(src.Head());
   NodeAllocator() = std::move(src.NodeAllocator());
+}
+
+template<typename T, typename A>
+void Aii::List<T, A>::PushFront(Node* node) noexcept{
+  Node* prevHead = Head();
+  Head() = node;
+  node->Next() = prevHead;
+}
+
+template<typename T, typename A>
+void Aii::List<T, A>::Append(Node* node) noexcept{
+  // Theta(n)
+  Node* indexer = Head();
+  if(!indexer){
+    Head() = node;
+  }
+  while(indexer->Next()){
+    indexer = indexer->Next();
+  }
+  indexer->Next() = node;
+}
+
+template<typename T, typename A>
+void Aii::List<T, A>::Remove(Node* node) noexcept{
+  // Theta(n)
+  Node* indexer = Head();
+  if(!indexer){
+    return;
+  }
+  while(indexer){
+    if(indexer->Next() == node){
+      if(indexer->Next()){
+        indexer->Next() = indexer->Next()->Next();
+      }
+      else{
+        return;
+      }
+    }
+    indexer = indexer->Next();
+  }
+}
+
+template<typename T, typename A>
+void Aii::List<T, A>::Extract(Node* node) noexcept{
+  // Theta(n)
+  Node* indexer = Head();
+  if(!indexer){
+    return;
+  }
+  while(indexer){
+    if(indexer->Next() == node){
+      if(indexer->Next()){
+        indexer->Next() = indexer->Next()->Next();
+      }
+      return node;
+    }
+    indexer = indexer->Next();
+  }
 }
