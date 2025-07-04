@@ -1,5 +1,4 @@
 #pragma once
-
 // Double Linked List impl
 
 #include "aii/allocator.hpp"
@@ -62,6 +61,7 @@ class DoubleList{
     DoubleList(const DoubleList& src) noexcept;
     DoubleList(DoubleList&& other) noexcept;
     ~DoubleList() noexcept;
+    void Swap(DoubleList& src) noexcept;
     DoubleList& operator=(const DoubleList& src) noexcept;
     DoubleList& operator=(DoubleList&& src) noexcept;
 
@@ -72,15 +72,14 @@ class DoubleList{
     void PushFront(Node* node) noexcept;
     void Append(Node* node) noexcept;
     void Remove(Node* node) noexcept;
-    void Extract(Node* node) noexcept;
+    auto Extract(Node* node) noexcept -> Node*;
 
     template<typename ...Args>
-    void EmplaceBack(Args ...args);
+    void EmplaceBack(Args ...args) noexcept;
     template<typename ...Args>
-    void EmplaceFront(Args ...args);
+    void EmplaceFront(Args ...args) noexcept;
 
   private:
-    void DeleteElements() noexcept;
     NodeAllocType& NodeAllocator() noexcept{ return m_allocator;}
     void DeallocateElements() noexcept;
 
@@ -242,9 +241,71 @@ Aii::DoubleList<T,A>::DoubleList(DoubleList&& src) noexcept
 }
 
 template<typename T, typename A>
-Aii::DoubleList<T,A>::~DoubleList() noexcept
-{
-
+void Aii::DoubleList<T, A>::DeallocateElements() noexcept{
+  Node* indexer = Head();
+  Node* prev = indexer;
+  while(indexer){
+    indexer = indexer->Next();
+    NodeAllocType().Deallocate(prev);
+    prev = indexer;
+  }
 }
 
+template<typename T, typename A>
+Aii::DoubleList<T,A>::~DoubleList() noexcept{
+  DeallocateElements();
+}
 
+template<typename T, typename A>
+void Aii::DoubleList<T,A>::Swap(DoubleList& src) noexcept{
+  Node prevHead = Head();
+  NodeAllocType prevAlloc = NodeAllocator();
+  Head() = src.Head();
+  NodeAllocator() = src.NodeAllocator();
+  src.Head() = prevHead;
+  src.NodeAllocator() = prevAlloc;
+}
+
+template<typename T, typename A>
+auto Aii::DoubleList<T, A>::operator=(const DoubleList& src)
+noexcept -> DoubleList&{
+  DoubleList tmp{src};
+  Swap(tmp);
+}
+
+template<typename T, typename A>
+auto Aii::DoubleList<T, A>::operator=(DoubleList&& src)
+noexcept -> DoubleList&{
+  DoubleList tmp{std::move(src)};
+  Swap(tmp);
+}
+
+template<typename T, typename A>
+void Aii::DoubleList<T, A>::PushFront(Node* node) noexcept{
+  Head()->InsertNext(node);
+}
+
+template<typename T, typename A>
+void Aii::DoubleList<T, A>::Append(Node* node) noexcept{
+  Head()->Append(node);
+}
+
+template<typename T, typename A>
+void Aii::DoubleList<T, A>::Remove(Node* node) noexcept{
+  Head()->Remove(node);
+}
+
+template<typename T, typename A>
+auto Aii::DoubleList<T, A>::Extract(Node* node) noexcept -> Node*{
+  return Head()->Extract(node);
+}
+
+template<typename T, typename A> template<typename ...Args>
+void Aii::DoubleList<T, A>::EmplaceBack(Args ...args) noexcept{
+  Head()->Append(NodeAllocator().Allocate(args...));
+}
+
+template<typename T, typename A> template<typename ...Args>
+void Aii::DoubleList<T, A>::EmplaceFront(Args ...args) noexcept{
+  Head()->InsertNext(NodeAllocator().Allocate(args...));
+}
