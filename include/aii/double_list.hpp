@@ -31,12 +31,29 @@ class DoubleListNode{
 };
 
 } // namespace Crtp
+  
+// Composition type
+template<typename T>
+class DoubleListNode: Crtp::DoubleListNode<DoubleListNode<T>>{
+  public:
+    DoubleListNode(T val): m_next{nullptr}, m_prev{nullptr}, m_val{val}{}
+    DoubleListNode*& Head() noexcept{ return this;}
+    DoubleListNode*& Next() noexcept{ return m_next;}
+    DoubleListNode*& Prev() noexcept{ return m_prev;}
 
+  private:
+    DoubleListNode* m_prev;
+    DoubleListNode* m_next;
+    T m_val;
+};
+
+// Container type
 template<
   typename T, 
   typename A = Aii::Allocator<T>> 
 class DoubleList{
   class Node: Crtp::DoubleListNode<Node>{
+
     Node(T val): m_next{nullptr}, m_prev{nullptr}, m_val{val}{}
     Node(const Node& src) noexcept;
     Node(Node&& src) noexcept;
