@@ -17,7 +17,6 @@ template<typename D>
 class ListNode{
   ListNode*& Next() noexcept{
     static_cast<D*>(this)->Next();
-
   }
 
   ListNode*& Head() noexcept{
@@ -45,6 +44,7 @@ class List{
     private:
       Node* m_next;
       T m_val;
+
   };
 
   using NodeAllocType = typename A::template Rebind<Node>::other;
@@ -58,8 +58,6 @@ class List{
     ~List() noexcept;
     List& operator=(const List& src) noexcept;
     List& operator=(List&& src) noexcept;
-
-    NodeAllocType& Allocator() const noexcept{return m_allocator;}
 
     constexpr Node*& Head() const noexcept{ return m_head;}
 
@@ -314,3 +312,4 @@ void Aii::List<T, A>::Extract(Node* node) noexcept{
     indexer = indexer->Next();
   }
 }
+
