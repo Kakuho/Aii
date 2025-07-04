@@ -7,7 +7,6 @@
 #include <cassert>
 
 #include "aii/allocator.hpp"
-#include "aii/optional.hpp"
 
 namespace Aii{
 
